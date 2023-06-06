@@ -3,17 +3,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../views/home/home_screen.dart';
 
 class AuthController extends GetxController {
+  late SharedPreferences _sharedPreferences;
   late TextEditingController firstName, lastName, email, password;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
-  void onInit() {
+  void onInit(){
     _initControllers();
+    _sharedPref();
     super.onInit();
+  }
+  _sharedPref()async{
+    _sharedPreferences = await SharedPreferences.getInstance();
   }
 
   _initControllers() {
@@ -40,6 +46,7 @@ class AuthController extends GetxController {
         );
         Utils.hideLoader();
         if(userCredential != null){
+          _sharedPreferences.setString("user_id", userCredential.user!.uid);
           Get.offAll(()=>HomeScreen());
         }
       }on FirebaseAuthException catch (e) {
@@ -70,17 +77,16 @@ class AuthController extends GetxController {
         Utils.hideLoader();
         User? user = userCredential.user;
         if (user != null) {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set({
+          _sharedPreferences.setString("user_id", userCredential.user!.uid);
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
             'firstName': firstName.text.trim(),
             'lastName': lastName.text.trim(),
-          }).then((value) => Get.to(() => HomeScreen()));
+          }).then((value) => Get.offAll(() => HomeScreen()));
         }
       } catch (e) {
         Utils.printLog('Sign-up error: $e');
       }
     }
   }
+
 }

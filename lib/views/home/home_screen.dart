@@ -4,6 +4,7 @@ import 'package:assignment_flutter/views/auth/app_colors.dart';
 import 'package:assignment_flutter/views/home/movie_detail.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,7 +18,64 @@ final _controller = Get.put(HomeController());
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           children: [
-            TextFormField(
+            TypeAheadFormField(
+              textFieldConfiguration: TextFieldConfiguration(
+                  controller: _controller.searchController ,
+                  onChanged: _controller.search,
+                  decoration:  InputDecoration(
+                    focusColor: Colors.white,
+                    //add prefix icon
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.blue, width: 1.0),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    fillColor: Colors.grey,
+                    hintText: "Search Movie...",
+                    hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+
+                  )
+              ),
+              suggestionsCallback: (pattern) {
+                return CitiesService.getSuggestions(pattern);
+              },
+              itemBuilder: (context, suggestion) {
+                return ListTile(
+                  title: Text(suggestion.toString()),
+                );
+              },
+              noItemsFoundBuilder: (context){
+                return const SizedBox();
+              },
+              errorBuilder: (context,e){
+                return const SizedBox();
+
+              },
+
+              transitionBuilder: (context, suggestionsBox, controller) {
+                return suggestionsBox;
+              },
+              onSuggestionSelected: (suggestion) {
+                _controller.searchController.text = suggestion.toString();
+              },
+              validator: (value) {
+                if (value.toString().isEmpty) {
+                  return 'Please select a city';
+                }
+              },
+
+            ),
+          /*  TextFormField(
               controller: _controller.searchController,
               onChanged: _controller.search,
               style: const TextStyle(
@@ -48,7 +106,7 @@ final _controller = Get.put(HomeController());
                 ),
 
               ),
-            ),
+            ),*/
             Expanded(
               child: Obx(
                 ()=>    (_controller.isSearch.value && _controller.searchList.isEmpty) ||
@@ -163,5 +221,30 @@ final _controller = Get.put(HomeController());
         ),
       )
     );
+  }
+}
+class CitiesService {
+  static final List<String> cities = [
+    'Beirut',
+    'Damascus',
+    'San Fransisco',
+    'Rome',
+    'Los Angeles',
+    'Madrid',
+    'Bali',
+    'Barcelona',
+    'Paris',
+    'Bucharest',
+    'New York City',
+    'Philadelphia',
+    'Sydney',
+  ];
+
+  static List<String> getSuggestions(String query) {
+    List<String> matches = <String>[];
+    matches.addAll(cities);
+
+    matches.retainWhere((s) => s.toLowerCase().contains(query.toLowerCase()));
+    return matches;
   }
 }

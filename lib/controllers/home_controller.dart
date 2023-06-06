@@ -2,11 +2,14 @@ import 'package:assignment_flutter/services/api_provider/api_provider.dart';
 import 'package:assignment_flutter/services/models/Movie_detail_model.dart';
 import 'package:assignment_flutter/services/models/movie_model.dart';
 import 'package:assignment_flutter/utills/app_utills.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeController extends GetxController {
+  late SharedPreferences _sharedPreferences;
   late AuthApiProvider _apiProvider;
   RxList<MovieModel> movieList = RxList();
   RxList<MovieModel> searchList = RxList();
@@ -16,17 +19,21 @@ class HomeController extends GetxController {
   RxInt page = 1.obs;
   RxBool isSearch = false.obs;
   final debounce =   Debouncer(delay: const Duration(milliseconds: 1000),);
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
 
   @override
   void onInit() {
     _apiProvider = AuthApiProvider();
+    _sharedPref();
     reset();
     allMovies(1);
     scrollController.addListener(loadMore);
     super.onInit();
   }
-
+_sharedPref()async{
+  _sharedPreferences = await SharedPreferences.getInstance();
+  }
   reset() {
     isSearch.value=false;
     page.value = 1;
@@ -123,4 +130,23 @@ class HomeController extends GetxController {
       }
     }
   }
+
+  Future<void> login() async {
+    if(await Utils.hasNetwork()){
+      //  await _firebaseFirestore.collection('users').doc("user.uid").collection('messages').doc("msg_id").set(data)
+      await _firebaseFirestore.collection('users').doc(_sharedPreferences.getString("user_id")).set({
+        'keyword': searchController.text.trim(),
+      });
+    }
+
+  }
+/*  await FirebaseFirestore.instance
+      .collection(collection)
+      .doc("doc_id")
+      .collection('messages')
+      .doc("msg_id")
+      .set(data)*/
+
+
+
 }
