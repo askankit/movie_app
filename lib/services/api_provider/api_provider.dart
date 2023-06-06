@@ -18,13 +18,12 @@ class AuthApiProvider {
   )..interceptors.add(Logging());
 
 
-  Future<List<MovieModel>?> getAllMovies() async {
+  Future<dynamic> getAllMovies(num page) async {
     try {
-      Response response = await _dio.get(ApiConstants.popularMovies,queryParameters: {"api_key":ApiConstants.apiKey});
-      var list = (response.data["results"] as List)
-          .map((e) => MovieModel.fromJson(e))
-          .toList();
-      return list;
+      Response response = await _dio.get(ApiConstants.popularMovies,queryParameters: {"api_key":ApiConstants.apiKey,
+        "page":page,
+        "language":"en-US",});
+      return response;
     } on DioError catch (err) {
       if (err.response != null) {
         final errorMessage = DioException.fromDioError(err).toString();
