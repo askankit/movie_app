@@ -31,6 +31,8 @@ class HomeController extends GetxController {
     isSearch.value=false;
     page.value = 1;
     movieList.clear();
+    searchList.clear();
+    searchController.clear();
     model.value = null;
   }
 
