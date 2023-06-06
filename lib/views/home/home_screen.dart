@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
    HomeScreen({super.key});
-final TextEditingController  _movieController = TextEditingController();
 final _controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,8 @@ final _controller = Get.put(HomeController());
         child: Column(
           children: [
             TextFormField(
-              controller: _movieController,
+              controller: _controller.searchController,
+              onChanged: _controller.search,
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.blue,
@@ -51,7 +51,15 @@ final _controller = Get.put(HomeController());
             ),
             Expanded(
               child: Obx(
-                ()=> _controller.movieList.isNotEmpty?RefreshIndicator(
+                ()=>    (_controller.isSearch.value && _controller.searchList.isEmpty) ||
+                    (_controller.isSearch.isFalse && _controller.movieList.isEmpty)?const Center(
+                  child: Text("No data found",
+                    style: TextStyle(
+                    fontSize: 16,
+                      fontWeight: FontWeight.w600
+                  ),),
+                ):
+                RefreshIndicator(
                   onRefresh: () async{
                     _controller.reset();
                     _controller.allMovies(1);
@@ -60,9 +68,9 @@ final _controller = Get.put(HomeController());
                     controller: _controller.scrollController,
                     child: ListView.builder(
                       controller: _controller.scrollController,
-                      itemCount: _controller.movieList.length,
+                      itemCount: _controller.isSearch.value ?_controller.searchList.length:_controller.movieList.length,
                       itemBuilder: (BuildContext context, int index) {
-                        var data =  _controller.movieList[index];
+                        var data =   _controller.isSearch.value ?_controller.searchList[index]:_controller.movieList[index];
                         return  GestureDetector(
                           onTap: (){
                                Get.to(()=> MovieDetailScreen(),arguments:data.id);
@@ -148,9 +156,7 @@ final _controller = Get.put(HomeController());
                         );
                       },),
                   ),
-                ):const Center(
-                  child: Text("No data Found"),
-                ),
+                )
               ),
             ),
           ],

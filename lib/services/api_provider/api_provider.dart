@@ -37,6 +37,26 @@ class AuthApiProvider {
   }
 
 
+  Future<dynamic> searchMovie(String text, num page) async {
+    try {
+      Response response = await _dio.get(ApiConstants.search,queryParameters: {"api_key":ApiConstants.apiKey,
+        "page":page,
+        "query":text.trim(),
+        "language":"en-US",});
+      return response;
+    } on DioError catch (err) {
+      if (err.response != null) {
+        final errorMessage = DioException.fromDioError(err).toString();
+        throw errorMessage;
+      } else {
+        log('Error sending request!');
+        log(err.message??"");
+      }
+    }
+    return null;
+  }
+
+
   Future<MovieDetailModel?> getMovieDetail({required num id}) async {
     try {
       Response response = await _dio.get("${ApiConstants.movieDetails}$id",
