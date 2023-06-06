@@ -1,17 +1,18 @@
+import 'package:assignment_flutter/controllers/auth_controller.dart';
 import 'package:assignment_flutter/generated/assets.dart';
+import 'package:assignment_flutter/utills/app_utills.dart';
 import 'package:assignment_flutter/views/auth/app_colors.dart';
 import 'package:assignment_flutter/views/auth/signup_screen.dart';
-import 'package:assignment_flutter/views/home/home_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 class SignInScreen extends StatelessWidget {
-   SignInScreen({super.key});
-
-  final TextEditingController _emaiController = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+   SignInScreen({super.key}){
+     _controller.reset();
+   }
+   final _controller = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class SignInScreen extends StatelessWidget {
                   child: Lottie.asset(Assets.jsonsLogin, height: 300),
                 ),
                 TextFormField(
-                  controller: _emaiController,
+                  controller: _controller.email,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.blue,
@@ -67,7 +68,7 @@ class SignInScreen extends StatelessWidget {
                   height: 20,
                 ),
                 TextFormField(
-                  controller: _password,
+                  controller: _controller.password,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.blue,
@@ -110,7 +111,15 @@ class SignInScreen extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: (){
-                      Get.to(()=>HomeScreen());
+                      if(_controller.email.text.trim().isEmpty){
+                        Utils.errorSnackBar("Enter email");
+                      }else if(!Utils.emailValidation(_controller.email.text.trim())){
+                        Utils.errorSnackBar("Enter password");
+                      }else if(_controller.password.text.trim().isEmpty){
+                        Utils.errorSnackBar("Enter password");
+                      }else{
+                        _controller.login();
+                      }
                     },
                     style:  ButtonStyle(backgroundColor: MaterialStateProperty.all(AppColor.themeColor),),
                     child: const Text("log in",style: TextStyle(

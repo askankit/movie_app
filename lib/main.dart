@@ -1,11 +1,21 @@
 import 'package:assignment_flutter/views/auth/app_colors.dart';
 import 'package:assignment_flutter/views/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 
+import 'firebase_options.dart';
+Future initializeFirebase() async {
+  await Firebase.initializeApp(
+    name: "LoveOneFish",
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  initializeFirebase();
   runApp(const MyApp());
   configLoading();
 }

@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:assignment_flutter/services/api_constant.dart';
 import 'package:assignment_flutter/services/models/Movie_detail_model.dart';
-import 'package:assignment_flutter/services/models/movie_model.dart';
 import 'package:dio/dio.dart';
 
 import '../dio_exeptions.dart';
+
 
 
 class AuthApiProvider {
@@ -24,9 +24,9 @@ class AuthApiProvider {
         "page":page,
         "language":"en-US",});
       return response;
-    } on DioError catch (err) {
+    } on DioException catch (err) {
       if (err.response != null) {
-        final errorMessage = DioException.fromDioError(err).toString();
+        final errorMessage = NetworkException.fromDioError(err).toString();
         throw errorMessage;
       } else {
         log('Error sending request!');
@@ -44,9 +44,9 @@ class AuthApiProvider {
         "query":text.trim(),
         "language":"en-US",});
       return response;
-    } on DioError catch (err) {
+    } on DioException catch (err) {
       if (err.response != null) {
-        final errorMessage = DioException.fromDioError(err).toString();
+        final errorMessage = NetworkException.fromDioError(err).toString();
         throw errorMessage;
       } else {
         log('Error sending request!');
@@ -63,9 +63,9 @@ class AuthApiProvider {
           queryParameters: {"api_key":ApiConstants.apiKey});
       var dataResponse = MovieDetailModel.fromJson(response.data);
       return dataResponse;
-    } on DioError catch (err) {
+    } on DioException catch (err) {
       if (err.response != null) {
-        final errorMessage = DioException.fromDioError(err).toString();
+        final errorMessage = NetworkException.fromDioError(err).toString();
         throw errorMessage;
       } else {
         log('Error sending request!');

@@ -1,4 +1,6 @@
+import 'package:assignment_flutter/controllers/auth_controller.dart';
 import 'package:assignment_flutter/generated/assets.dart';
+import 'package:assignment_flutter/utills/app_utills.dart';
 import 'package:assignment_flutter/views/auth/app_colors.dart';
 import 'package:assignment_flutter/views/home/home_screen.dart';
 import 'package:flutter/gestures.dart';
@@ -7,9 +9,10 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 class SignUpScreen extends StatelessWidget {
-   SignUpScreen({super.key});
-  final TextEditingController _emaiController = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+   SignUpScreen({super.key}){
+     _controller.reset();
+   }
+final _controller = Get.put(AuthController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +30,7 @@ class SignUpScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: TextFormField(
-                  controller: _emaiController,
+                  controller: _controller.firstName,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.blue,
@@ -68,7 +71,7 @@ class SignUpScreen extends StatelessWidget {
               const SizedBox(width: 20,),
               Expanded(
                 child: TextFormField(
-                  controller: _emaiController,
+                  controller: _controller.lastName,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.blue,
@@ -110,7 +113,7 @@ class SignUpScreen extends StatelessWidget {
           ),
           const SizedBox(height: 30,),
           TextFormField(
-            controller: _emaiController,
+            controller: _controller.email,
             style: const TextStyle(
               fontSize: 16,
               color: Colors.blue,
@@ -151,7 +154,7 @@ class SignUpScreen extends StatelessWidget {
             height: 20,
           ),
           TextFormField(
-            controller: _password,
+            controller: _controller.password,
             style: const TextStyle(
               fontSize: 16,
               color: Colors.blue,
@@ -194,8 +197,20 @@ class SignUpScreen extends StatelessWidget {
             height: 50,
             child: ElevatedButton(
               onPressed: (){
-                Get.to(()=> HomeScreen());
-              },
+                if(_controller.firstName.text.trim().isEmpty){
+                  Utils.errorSnackBar("Please Enter First Name");
+                }else if(_controller.lastName.text.trim().isEmpty){
+                  Utils.errorSnackBar("Please Enter Last Name");
+                }else if(_controller.email.text.trim().isEmpty){
+                  Utils.errorSnackBar("Please Enter email");
+                }else if(!Utils.emailValidation(_controller.email.text.trim())){
+                  Utils.errorSnackBar("Please enter valid email");
+                }else if(_controller.password.text.trim().isEmpty || _controller.password.text.trim().length<5){
+                  Utils.errorSnackBar("Please enter valid password");
+                }else{
+                _controller.signUp();
+                }
+                },
               style:  ButtonStyle(backgroundColor: MaterialStateProperty.all(AppColor.themeColor),),
               child: const Text("Sign up",style: TextStyle(
                   fontSize: 16,
