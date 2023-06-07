@@ -5,34 +5,37 @@ import 'package:assignment_flutter/utills/app_utills.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/src/rx_workers/utils/debouncer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeController extends GetxController {
-  late SharedPreferences _sharedPreferences;
+
   late AuthApiProvider _apiProvider;
   RxList<MovieModel> movieList = RxList();
   RxList<MovieModel> searchList = RxList();
+  RxList<String> historyList = RxList();
   Rxn<MovieDetailModel> model = Rxn();
   ScrollController scrollController = ScrollController();
   TextEditingController searchController = TextEditingController();
   RxInt page = 1.obs;
+  RxString userId = "".obs;
   RxBool isSearch = false.obs;
-  final debounce =   Debouncer(delay: const Duration(milliseconds: 1000),);
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
 
   @override
   void onInit() {
     _apiProvider = AuthApiProvider();
-    _sharedPref();
     reset();
+    _sharedPref();
     allMovies(1);
+    getSearchData();
     scrollController.addListener(loadMore);
     super.onInit();
   }
-_sharedPref()async{
-  _sharedPreferences = await SharedPreferences.getInstance();
+ Future<void> _sharedPref()async{
+    final SharedPreferences prefs = await _prefs;
+    userId.value = prefs.getString("user_id")??"";
   }
   reset() {
     isSearch.value=false;
@@ -41,6 +44,7 @@ _sharedPref()async{
     searchList.clear();
     searchController.clear();
     model.value = null;
+    userId.value ="";
   }
 
   void loadMore() {
@@ -88,14 +92,16 @@ _sharedPref()async{
       isSearch.value= false;
     }else{
       isSearch.value= true;
-      debounce.call(()=> searchMovie(data, 1));
+      searchMovie(data.trim(), 1);
     }
   }
 
   Future<List<MovieModel>?> searchMovie(String text,num page) async {
     if (await Utils.hasNetwork()) {
+      isSearch.value= true;
       Utils.showLoader();
-    var response = await _apiProvider.searchMovie(text, page);
+      storeSearchData(text.trim());
+      var response = await _apiProvider.searchMovie(text, page);
       Utils.hideLoader();
       if (response != null) {
         if(response.data["page"]==1){
@@ -131,22 +137,35 @@ _sharedPref()async{
     }
   }
 
-  Future<void> login() async {
-    if(await Utils.hasNetwork()){
-      //  await _firebaseFirestore.collection('users').doc("user.uid").collection('messages').doc("msg_id").set(data)
-      await _firebaseFirestore.collection('users').doc(_sharedPreferences.getString("user_id")).set({
-        'keyword': searchController.text.trim(),
-      });
-    }
 
+  Future<void>  storeSearchData(String searchData) async {
+    await _firebaseFirestore.collection('users').doc(userId.value).set({
+      'searchData': FieldValue.arrayUnion([searchData.trim()]),
+      'timestamp':FieldValue.serverTimestamp(),
+    },SetOptions(merge: true));
   }
-/*  await FirebaseFirestore.instance
-      .collection(collection)
-      .doc("doc_id")
-      .collection('messages')
-      .doc("msg_id")
-      .set(data)*/
 
+
+  Future<void> getSearchData() async {
+   await _sharedPref();
+    var snapshot = await _firebaseFirestore.collection('users').doc(userId.value).get();
+    if (snapshot.exists) {
+      final data = snapshot.data();
+      if (data != null && data.containsKey('searchData')) {
+        historyList.clear();
+        historyList.value = List<String>.from(data['searchData']);
+        historyList.refresh();
+      }
+    }
+  }
+
+  Future<List<String>> getSuggestions(String query) async{
+    await getSearchData();
+    List<String> matches = <String>[];
+    matches.addAll(historyList.value);
+    matches.retainWhere((s) => s.toLowerCase().contains(query.toLowerCase()));
+    return matches;
+  }
 
 
 }

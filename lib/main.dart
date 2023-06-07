@@ -6,9 +6,9 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 
 import 'firebase_options.dart';
-Future initializeFirebase() async {
+Future<void> initializeFirebase() async {
   await Firebase.initializeApp(
-    name: "LoveOneFish",
+    name: "Movie Flutter",
     options: DefaultFirebaseOptions.currentPlatform,
   );
 }

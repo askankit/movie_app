@@ -20,8 +20,10 @@ final _controller = Get.put(HomeController());
           children: [
             TypeAheadFormField(
               textFieldConfiguration: TextFieldConfiguration(
-                  controller: _controller.searchController ,
-                  onChanged: _controller.search,
+                  controller: _controller.searchController,
+                  onSubmitted: _controller.search,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.search,
                   decoration:  InputDecoration(
                     focusColor: Colors.white,
                     //add prefix icon
@@ -29,6 +31,7 @@ final _controller = Get.put(HomeController());
                       Icons.search,
                       color: Colors.grey,
                     ),
+
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
@@ -44,10 +47,11 @@ final _controller = Get.put(HomeController());
                       fontWeight: FontWeight.w400,
                     ),
 
+
                   )
               ),
               suggestionsCallback: (pattern) {
-                return CitiesService.getSuggestions(pattern);
+                return _controller.getSuggestions(pattern);
               },
               itemBuilder: (context, suggestion) {
                 return ListTile(
@@ -67,10 +71,11 @@ final _controller = Get.put(HomeController());
               },
               onSuggestionSelected: (suggestion) {
                 _controller.searchController.text = suggestion.toString();
+                _controller.searchMovie(_controller.searchController.text.trim(),1);
               },
               validator: (value) {
                 if (value.toString().isEmpty) {
-                  return 'Please select a city';
+                  return 'Please select sugge';
                 }
               },
 
@@ -125,6 +130,7 @@ final _controller = Get.put(HomeController());
                   child: Scrollbar(
                     controller: _controller.scrollController,
                     child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       controller: _controller.scrollController,
                       itemCount: _controller.isSearch.value ?_controller.searchList.length:_controller.movieList.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -221,30 +227,5 @@ final _controller = Get.put(HomeController());
         ),
       )
     );
-  }
-}
-class CitiesService {
-  static final List<String> cities = [
-    'Beirut',
-    'Damascus',
-    'San Fransisco',
-    'Rome',
-    'Los Angeles',
-    'Madrid',
-    'Bali',
-    'Barcelona',
-    'Paris',
-    'Bucharest',
-    'New York City',
-    'Philadelphia',
-    'Sydney',
-  ];
-
-  static List<String> getSuggestions(String query) {
-    List<String> matches = <String>[];
-    matches.addAll(cities);
-
-    matches.retainWhere((s) => s.toLowerCase().contains(query.toLowerCase()));
-    return matches;
   }
 }
