@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../auth/app_colors.dart';
+import '../bookings/book_ticket_page.dart';
 
 class MovieDetailScreen extends StatelessWidget {
   MovieDetailScreen() {
@@ -128,6 +129,25 @@ class MovieDetailScreen extends StatelessWidget {
               Obx(() => Text(_controller.model.value?.overview ?? "",
                 style: const TextStyle(
                     fontWeight: FontWeight.w600, fontSize: 15),)),
+              const SizedBox(
+                height: 10,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: Get.width/2,
+                  child: ElevatedButton(
+                    style:  ButtonStyle(backgroundColor: MaterialStateProperty.all(AppColor.themeColor),),
+                    onPressed: () {
+                       Get.to(()=>BookTicketScreen());
+                    },
+                    child: const Text("Book Ticket",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                      color: Colors.white),),),
+                ),
+              ),
               const SizedBox(
                 height: 10,
               ),
